@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Метро: ночная смена · стены</title>
 
-<!-- Оптимизация загрузки шрифтов: предподключение и асинхронная загрузка -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=PT+Mono&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -28,12 +27,10 @@
   letter-spacing: 0.02em;
 }
 
-/* Hide chrome on touch devices */
 @media (hover: none) {
   .design-ui-credit { display: none; }
 }
 
-/* Print fixes */
 @media print {
   * {
     transition: none !important;
@@ -50,12 +47,10 @@
 </style>
 <script>
 (function () {
-    // Design-ui pages are single compositions, so the whole body is editable.
     function markEditable() {
         document.body.classList.add('artifact-editable');
     }
 
-    // Credit badge with idle-fade. Hover devices only.
     function initChromeUI() {
         if (!matchMedia('(hover: hover)').matches) return;
 
@@ -90,10 +85,6 @@
 })();
 
 </script>
-<!-- /skill:chrome -->
-
-<!-- Удалены все внешние скрипты Kaspersky, т.к. они замедляют загрузку в РФ -->
-<!-- Скрипты антивируса были удалены для ускорения запуска на мобильном интернете -->
 
 <style>
 :root{
@@ -237,7 +228,6 @@ kbd{font-family:"PT Mono",monospace;background:var(--ink);color:var(--cream);pad
   .slot{min-width:76px;padding:7px 9px}
 }
 
-/* clean game field, keep the start/game overlays */
 html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--tunnel);padding:0}
 .wrap{width:100vw;height:100dvh;max-width:none;margin:0}
 .sign,.tray,.foot{display:none}
@@ -336,7 +326,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--tunne
       <div class="veil" id="veilStart">
         <div>
           <h2>Обнеси себя стенами до ночи</h2>
-          <p>Пять минут света, пять минут темноты. Сундук каждые 20 секунд: молоток 75%, доски 20% (2–5), гвозди 40% (10–20). Стены ставятся по одной: 1 доска и 4 гвоздя за блок. Укрытие включается, когда есть стена слева, справа и сверху. Мутанты грызут дерево, так что держи гвозди на ремонт.</p>
+          <p>Пять минут света, пять минут темноты. Сундук каждые 20 секунд: молоток 75%, доски 20% (2–5), гвозди 40% (10–20). Стены ставятся по одной: 1 доска и 4 гвоздя за блок. Укрытие включается, когда есть стена слева, справа и сверху. Мутанты грызут дерево, так что держи гвозди на ремонт. Осторожно: поезда движутся по путям!</p>
           <div class="keys"><span><kbd>A</kbd><kbd>D</kbd>идти</span><span><kbd>Space</kbd>прыжок</span><span><kbd>F</kbd>сундук</span><span><kbd>E</kbd>стена / ремонт</span><span><kbd>W</kbd>+<kbd>E</kbd>потолок</span><span><kbd>Q</kbd>разобрать</span><span><kbd>I</kbd>инвентарь</span><span><kbd>P</kbd>пауза</span></div>
           <button class="go" id="btnStart">Начать смену</button>
         </div>
@@ -399,7 +389,10 @@ var C={
   wood:'oklch(0.635 0.085 62)', woodTop:'oklch(0.70 0.075 66)', woodDark:'oklch(0.47 0.07 58)', woodLine:'oklch(0.36 0.05 55)',
   coat:'oklch(0.40 0.055 250)', coat2:'oklch(0.30 0.045 250)', skin:'oklch(0.80 0.05 70)',
   mut:'oklch(0.56 0.035 305)', mut2:'oklch(0.42 0.04 305)', eye:'oklch(0.62 0.21 28)',
-  ratl:'oklch(0.44 0.02 40)', ok:'oklch(0.72 0.16 148)'
+  ratl:'oklch(0.44 0.02 40)', ok:'oklch(0.72 0.16 148)',
+  trainBlue:'oklch(0.35 0.12 250)', trainBlueL:'oklch(0.45 0.12 250)', trainRed:'oklch(0.35 0.18 28)',
+  botMetal:'oklch(0.55 0.01 250)', botLight:'oklch(0.62 0.21 28)', botAccent:'oklch(0.75 0.08 80)',
+  railSteel:'oklch(0.65 0.02 250)', railRust:'oklch(0.55 0.04 40)'
 };
 var V={W:960,H:540};
 var cv=document.getElementById('game'), ctx=cv.getContext('2d');
@@ -410,6 +403,9 @@ function fit(){ DPR=Math.min(2,window.devicePixelRatio||1); cv.width=V.W*DPR; cv
 fit(); addEventListener('resize',fit);
 
 var WORLD_W=5400, GROUND_Y=474, ST_Y=408, CELL=22, YOFF=12;
+var RAIL_Y = 452; // Y-координата верхней части рельс (пути)
+var TRAIN_Y = RAIL_Y - 4; // Y-координата днища поезда (на рельсах)
+
 var STATIONS=[
   {x:66,w:770,name:'КОМСОМОЛЬСКАЯ'},
   {x:1980,w:726,name:'НОВОСЛОБОДСКАЯ'},
@@ -440,6 +436,25 @@ TUNNELS.forEach(function(t){ SPAWN.push({x1:t.a+70,x2:t.b-90,y:GROUND_Y,w:3}); }
 BEAMS.forEach(function(b){ SPAWN.push({x1:b.x+14,x2:b.x+b.w-40,y:b.y,w:1.6}); });
 WAGONS.forEach(function(w){ SPAWN.push({x1:w.x+24,x2:w.x+w.w-50,y:w.y,w:1.4}); });
 
+// Подвижные поезда на рельсах
+var TRAINS = [];
+function spawnTrain() {
+  var dir = Math.random() < 0.5 ? 1 : -1;
+  var x = dir > 0 ? -600 : WORLD_W + 600;
+  var speed = rr(180, 320) * dir;
+  var cars = ri(3, 6);
+  TRAINS.push({
+    x: x,
+    speed: speed,
+    cars: cars,
+    carW: 120,
+    carH: 48,
+    y: TRAIN_Y,
+    dir: dir,
+    color: Math.random() < 0.7 ? 'blue' : 'red'
+  });
+}
+
 function surfaceY(x){ var y=GROUND_Y; for(var i=0;i<STATIONS.length;i++){ var s=STATIONS[i]; if(x>=s.x&&x<=s.x+s.w) y=Math.min(y,ST_Y); } return y; }
 function hash(n){ var v=Math.sin(n*127.1)*43758.5453; return v-Math.floor(v); }
 function rr(a,b){ return a+Math.random()*(b-a); }
@@ -461,9 +476,9 @@ function reset(){
   G={state:'menu',score:0,cycle:1,phase:'day',phaseT:0,chestT:CHEST_EVERY,
     darkness:0.10,shake:0,chestsOpened:0,wallsBuilt:0,invOpen:false,
     inv:{planks:0,nails:0,hammer:0},hp:100,hurtT:0,sheltered:false,
-    chests:[],enemies:[],walls:new Map(),spawnT:0,flyT:0};
+    chests:[],enemies:[],walls:new Map(),spawnT:0,flyT:0,trainT:0};
   P={x:340,y:ST_Y-40,vx:0,vy:0,w:20,h:34,onGround:false,face:1,walk:0,coyote:0,blocked:0};
-  parts=[]; cam.x=0; document.getElementById('log').innerHTML='';
+  parts=[]; cam.x=0; TRAINS=[]; document.getElementById('log').innerHTML='';
 }
 reset();
 
@@ -797,6 +812,36 @@ function update(dt){
   for(i=0;i<parts.length;i++){ var p=parts[i]; p.life-=dt; p.vy+=1200*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; }
   parts=parts.filter(function(p){ return p.life>0; });
 
+  // Обновление поездов
+  G.trainT -= dt;
+  if(G.trainT <= 0) {
+    G.trainT = rr(25, 45);
+    spawnTrain();
+  }
+  
+  for(i=TRAINS.length-1; i>=0; i--) {
+    var tr = TRAINS[i];
+    tr.x += tr.speed * dt;
+    
+    // Проверка столкновения с игроком (учитываем только область путей)
+    if(P.y + P.h > RAIL_Y - 10) {
+      var trainHitbox = {x: tr.x, y: tr.y, w: tr.cars * tr.carW, h: tr.carH};
+      if(hit(P, trainHitbox)) {
+        hurt(40);
+        G.shake = 16;
+        toast('Попал под поезд!', 'bad');
+        // Отбрасываем игрока
+        P.vx = tr.speed * 0.8;
+        P.vy = -400;
+      }
+    }
+    
+    // Удаление уехавших поездов
+    if((tr.dir > 0 && tr.x > WORLD_W + 800) || (tr.dir < 0 && tr.x < -800 - tr.cars * tr.carW)) {
+      TRAINS.splice(i, 1);
+    }
+  }
+
   var want=clamp(P.x+P.w/2-V.W/2,0,WORLD_W-V.W);
   cam.x+=(want-cam.x)*Math.min(1,dt*6);
 }
@@ -831,6 +876,35 @@ function drawTunnels(){
       if(h1>0.86) rect(x,GROUND_Y-64,16,10,C.rust);
     }
     rect(x1,152,x2-x1,7,C.concrete2); rect(x1,152,x2-x1,2,C.concrete);
+  }
+}
+function drawRails(){
+  var a=Math.max(0,cam.x-120),b=Math.min(WORLD_W,cam.x+V.W+120),x;
+  
+  // Шпалы
+  for(x=Math.floor(a/38)*38;x<b;x+=38) {
+    rect(x, RAIL_Y+2, 16, 4, C.woodDark);
+    rect(x, RAIL_Y+2, 2, 4, C.woodLine);
+  }
+  
+  // Рельсы
+  rect(a, RAIL_Y-2, b-a, 4, C.railSteel);
+  rect(a, RAIL_Y+6, b-a, 4, C.railSteel);
+  
+  // Блик на верхнем рельсе
+  rect(a, RAIL_Y-2, b-a, 1, 'oklch(0.80 0.02 250)');
+  
+  // Ржавчина на стыках
+  for(x=Math.floor(a/38)*38;x<b;x+=38) {
+    rect(x+2, RAIL_Y-1, 6, 2, C.railRust);
+    rect(x+2, RAIL_Y+7, 6, 2, C.railRust);
+  }
+  
+  // Гравий под путями
+  for(x=Math.floor(a/24)*24;x<b;x+=24) {
+    var gx = x + hash(x*1.7)*12;
+    rect(gx, RAIL_Y+10, 3, 3, 'oklch(0.38 0.02 60)');
+    rect(gx+6, RAIL_Y+12, 2, 2, 'oklch(0.34 0.02 55)');
   }
 }
 function drawGround(){
@@ -1031,6 +1105,77 @@ function drawParticles(){
   for(var i=0;i<parts.length;i++){ var p=parts[i]; ctx.globalAlpha=Math.min(1,p.life*3); rect(p.x,p.y,p.s,p.s,p.c); }
   ctx.globalAlpha=1;
 }
+
+function drawTrains(){
+  for(var i=0;i<TRAINS.length;i++){
+    var tr=TRAINS[i];
+    if(tr.x+tr.cars*tr.carW<cam.x-60||tr.x>cam.x+V.W+60) continue;
+    
+    for(var j=0;j<tr.cars;j++){
+      var cx=tr.x+j*tr.carW, cy=tr.y;
+      
+      // Корпус вагона
+      rect(cx+2,cy,tr.carW-4,tr.carH,tr.color==='blue'?C.trainBlue:C.trainRed);
+      rect(cx+2,cy,tr.carW-4,4,tr.color==='blue'?C.trainBlueL:'oklch(0.45 0.18 28)');
+      rect(cx+2,cy+tr.carH-6,tr.carW-4,6,C.steel2);
+      
+      // Окна
+      for(var w=0;w<3;w++){
+        rect(cx+12+w*38,cy+8,24,14,tr.color==='blue'?'oklch(0.78 0.04 250)':'oklch(0.78 0.04 28)');
+        rect(cx+12+w*38,cy+8,24,2,C.steel);
+      }
+      
+      // Колёса
+      rect(cx+10,cy+tr.carH-2,14,8,C.steel2);
+      rect(cx+tr.carW-24,cy+tr.carH-2,14,8,C.steel2);
+      
+      // Соединение между вагонами
+      if(j<tr.cars-1){
+        rect(cx+tr.carW-4,cy+16,8,4,C.steel2);
+        rect(cx+tr.carW-2,cy+18,4,2,C.steel);
+      }
+      
+      // Фара на первом вагоне
+      if(j===0){
+        rect(tr.dir>0?cx+tr.carW-8:cx,cy+16,8,8,C.yellow);
+        rect(tr.dir>0?cx+tr.carW-6:cx+2,cy+18,4,4,C.yellowPale);
+      }
+      
+      // Робот-патрульный в поезде
+      drawTrainBot(cx+tr.carW/2, cy+tr.carH/2-4, j);
+    }
+  }
+}
+
+function drawTrainBot(x, y, carNum) {
+  var anim = Math.sin(time*2.5+carNum*1.7);
+  
+  // Корпус робота
+  rect(x-8, y-10, 16, 18, C.botMetal);
+  rect(x-8, y-10, 16, 3, 'oklch(0.65 0.01 250)');
+  
+  // Голова
+  rect(x-5, y-18, 10, 10, C.botMetal);
+  rect(x-5, y-18, 10, 3, 'oklch(0.65 0.01 250)');
+  
+  // Глаза (красные светодиоды)
+  var eyeY = y-14 + anim*1.2;
+  rect(x-3, eyeY, 3, 3, C.botLight);
+  rect(x+1, eyeY+1, 3, 3, C.botLight);
+  
+  // Антенна
+  rect(x-1, y-21+anim*1.5, 2, 4, C.botAccent);
+  rect(x-1, y-22+anim*1.5, 2, 2, C.botLight);
+  
+  // Руки-манипуляторы
+  var armWave = Math.sin(time*3+carNum)*3;
+  rect(x-10, y-4+armWave, 4, 10, C.botMetal);
+  rect(x+6, y-4-armWave, 4, 10, C.botMetal);
+  
+  // Светящийся индикатор на груди
+  rect(x-2, y, 4, 4, Math.floor(time*2)%2===0?C.botLight:C.botAccent);
+}
+
 function drawLight(){
   if(G.darkness<0.03) return;
   lctx.setTransform(1,0,0,1,0,0);
@@ -1049,6 +1194,13 @@ function drawLight(){
   for(i=0;i<LAMPS.length;i++) hole(LAMPS[i].x+ox,LAMPS[i].y+8,LAMPS[i].dim?90:190,LAMPS[i].dim?0.55:0.95);
   for(i=0;i<WAGONS.length;i++) hole(WAGONS[i].x+WAGONS[i].w/2+ox,WAGONS[i].y+34,150,0.7);
   for(i=0;i<G.chests.length;i++) if(!G.chests[i].opened) hole(G.chests[i].x+16+ox,G.chests[i].y+12,56,0.62);
+  // Освещение от поездов
+  for(i=0;i<TRAINS.length;i++){
+    var tr=TRAINS[i];
+    for(var j=0;j<tr.cars;j++){
+      hole(tr.x+j*tr.carW+tr.carW/2+ox,tr.y+tr.carH/2,80,0.5);
+    }
+  }
   hole(P.x+10+ox,P.y+6,168,1);
   hole(P.x+10+ox+P.face*70,P.y+8,110,0.8);
   if(G.sheltered) hole(P.x+10+ox,P.y+10,120,0.5);
@@ -1083,7 +1235,10 @@ function render(){
   ctx.save();
   var sh=G.shake>0?(Math.random()-0.5)*G.shake:0;
   ctx.translate(-Math.round(cam.x)+sh,sh*0.4);
-  drawTunnels(); drawGround(); drawStations(); drawLampsFixture();
+  drawTunnels();
+  drawRails(); // Рисуем рельсы перед поездами
+  drawTrains();
+  drawGround(); drawStations(); drawLampsFixture();
   drawWagons(); drawBeams(); drawWalls(); drawChests();
   drawGhost(); drawEnemies(); drawPlayer(); drawParticles();
   ctx.restore();
