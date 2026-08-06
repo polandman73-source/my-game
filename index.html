@@ -294,6 +294,55 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--tunne
     font-size: 12px;
   }
 }
+
+/* Кнопка полноэкранного режима */
+#fullscreen-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 99999;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font: 600 14px/1 Oswald, sans-serif;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  user-select: none;
+}
+#fullscreen-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.6);
+  transform: scale(1.04);
+}
+#fullscreen-btn:active {
+  transform: scale(0.95);
+}
+#fullscreen-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+@media (max-width: 600px) {
+  #fullscreen-btn {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  #fullscreen-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
 </style>
 </head>
 <body>
@@ -415,6 +464,12 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--tunne
 <!-- Кнопка установки PWA -->
 <button id="btn-install-menu">📲 Установить приложение</button>
 
+<!-- Кнопка полноэкранного режима -->
+<button id="fullscreen-btn" aria-label="Полноэкранный режим" title="Полноэкранный режим (F11)">
+  <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+  <span>Во весь экран</span>
+</button>
+
 <script>
 // ================================================================
 //  PWA — УСТАНОВКА ПРИЛОЖЕНИЯ (по вашему примеру)
@@ -515,6 +570,47 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--tunne
             showInstallButtons();
         }
     }, 3000);
+})();
+
+// ================================================================
+//  ПОЛНОЭКРАННЫЙ РЕЖИМ (кнопка)
+// ================================================================
+(function initFullscreen() {
+    const btn = document.getElementById('fullscreen-btn');
+    
+    function updateButtonText() {
+        const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        const span = btn.querySelector('span');
+        if (span) span.textContent = isFullscreen ? 'Выйти' : 'Во весь экран';
+    }
+
+    function toggleFullscreen() {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        } else {
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+    }
+
+    btn.addEventListener('click', toggleFullscreen);
+
+    document.addEventListener('fullscreenchange', updateButtonText);
+    document.addEventListener('webkitfullscreenchange', updateButtonText);
+    
+    // Обновляем при загрузке
+    updateButtonText();
+
+    // F11 также переключает, но мы оставляем и стандартное поведение
+    // Дополнительно: синхронизация с F11
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F11') {
+            // Не блокируем стандартное поведение, но обновим кнопку после события
+            setTimeout(updateButtonText, 200);
+        }
+    });
 })();
 
 // ================================================================
